@@ -23,7 +23,8 @@ export default {
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/UserMenu.test.js",
-    "<rootDir>/client/src/components/Routes/Private.test.js"
+    "<rootDir>/client/src/components/Routes/Private.test.js",
+    "<rootDir>/client/src/pages/user/Dashboard.test.js"
   ],
 
   // jest code coverage
@@ -31,7 +32,8 @@ export default {
   collectCoverageFrom: [
     "client/src/pages/Auth/**",
     "client/src/components/UserMenu.js",
-    "client/src/components/Routes/Private.js"
+    "client/src/components/Routes/Private.js",
+    "client/src/pages/user/Dashboard.js"
   ],
   coverageThreshold: {
     global: {
