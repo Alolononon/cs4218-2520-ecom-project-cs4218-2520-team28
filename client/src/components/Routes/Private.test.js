@@ -3,6 +3,7 @@
 // Modified with comments and some (non-trival amount of) logic cleaning
 // notably use Promise.resolve to flush microtasks 
 // when we need useEffect to finish but it does not cause change in state
+// also added a test case for security scenario when token is removed
 // Prompt: Private.js Code + 
 // suggest unit test for this it should use studs/mocks for useAUth or others 
 // and should test true originially false originally change from true to false and false to truth
@@ -192,7 +193,7 @@ describe("Private Route Test", () => {
     expect(axios.get).toHaveBeenCalledTimes(2);
   });
 
-
+  // this test case is not by AI but added manually to cover security scenario
   test("token removed: immediately shows Spinner (security)", async () => {
     // Arrange - First render with token
     mockAuthValue = [{ token: "t1" }, jest.fn()];
