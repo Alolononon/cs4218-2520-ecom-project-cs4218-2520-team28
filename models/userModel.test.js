@@ -510,8 +510,5 @@ describe("User Model Unit Tests", () => {
     expect(user.phone).toBeUndefined();
   });
 
-  // Note: Unique email constraint testing requires database integration
-  // It cannot be tested with validateSync() as it requires database-level enforcement
-  // This would need integration tests with a test database or MongoDB Memory Server
 });
 
