@@ -24,7 +24,9 @@ export default {
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/UserMenu.test.js",
     "<rootDir>/client/src/components/Routes/Private.test.js",
-    "<rootDir>/client/src/pages/user/Dashboard.test.js"
+    "<rootDir>/client/src/pages/user/Dashboard.test.js",
+    "<rootDir>/client/src/pages/admin/Products.test.js",
+    
   ],
 
   // jest code coverage
@@ -33,7 +35,8 @@ export default {
     "client/src/pages/Auth/**",
     "client/src/components/UserMenu.js",
     "client/src/components/Routes/Private.js",
-    "client/src/pages/user/Dashboard.js"
+    "client/src/pages/user/Dashboard.js",
+    "client/src/pages/admin/Products.js"
   ],
   coverageThreshold: {
     global: {

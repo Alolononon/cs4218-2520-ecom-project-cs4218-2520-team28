@@ -15,6 +15,12 @@
 
 // Prompt 3: help me complete the declaration above for problem and solution
 
+// Bug fixes using Github Copilot (Claude Sonnet 4.5) Agent Mode:
+// Fixed 1: Added null/undefined checks for API data (data?.products || [])
+// Fixed 2: Handle missing product name/description gracefully (|| "")
+// Fixed 3: Fixed typo in error message ("Someething" -> "Something")
+// Prompt: Fix what is needed in main file so all test will pass
+
 import React, { useState, useEffect } from "react";
 import AdminMenu from "../../components/AdminMenu";
 import Layout from "./../../components/Layout";
@@ -27,11 +33,11 @@ const Products = () => {
   //getall products
   const getAllProducts = async () => {
     try {
-      const { data } = await axios.get("/api/v1/product/get-product");
-      setProducts(data.products);
+      const response = await axios.get("/api/v1/product/get-product");
+      setProducts(response?.data?.products || []);
     } catch (error) {
       console.log(error);
-      toast.error("Someething Went Wrong");
+      toast.error("Something Went Wrong");
     }
   };
 
@@ -62,8 +68,8 @@ const Products = () => {
                     style={{ height: "300px", objectFit: "cover" }}
                   />
                   <div className="card-body d-flex flex-column justify-content-center" style={{ flex: 1 }}>
-                    <h5 className="card-title">{p.name}</h5>
-                    <p className="card-text">{p.description}</p>
+                    <h5 className="card-title">{p.name || ""}</h5>
+                    <p className="card-text">{p.description || ""}</p>
                   </div>
                 </div>
               </Link>
