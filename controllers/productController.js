@@ -19,31 +19,45 @@ var gateway = new braintree.BraintreeGateway({
 
 export const createProductController = async (req, res) => {
   try {
+    if (!req.fields) {
+      return res.status(400).send({ message: "Please provide all fields" });
+    }
     const { name, description, price, category, quantity, shipping } =
       req.fields;
-    const { photo } = req.files;
-    //alidation
+    console.log(req.fields);
+    const photo = req?.files?.photo;
+    //validation
     switch (true) {
       case !name:
-        return res.status(500).send({ error: "Name is Required" });
+        return res.status(400).send({ error: "Name is Required" });
       case !description:
-        return res.status(500).send({ error: "Description is Required" });
-      case !price:
-        return res.status(500).send({ error: "Price is Required" });
+        return res.status(400).send({ error: "Description is Required" });
+      case !price: // note price is still a string here so no need check for 0
+        return res.status(400).send({ error: "Price is Required" });
       case !category:
-        return res.status(500).send({ error: "Category is Required" });
-      case !quantity:
-        return res.status(500).send({ error: "Quantity is Required" });
+        return res.status(400).send({ error: "Category is Required" });
+      case !quantity: // note quantity is still a string here so no need check for 0
+        return res.status(400).send({ error: "Quantity is Required" });
       case photo && photo.size > 1000000:
         return res
-          .status(500)
-          .send({ error: "photo is Required and should be less then 1mb" });
+          .status(400)
+          .send({ error: "Photo should be less than 1mb" });
     }
 
-    const products = new productModel({ ...req.fields, slug: slugify(name) });
+    const products = new productModel({ 
+      name, 
+      description, 
+      price, 
+      category, 
+      quantity, 
+      shipping,
+      slug: slugify(name) 
+    });
     if (photo) {
-      products.photo.data = fs.readFileSync(photo.path);
-      products.photo.contentType = photo.type;
+      products.photo = {
+        data: fs.readFileSync(photo.path),
+        contentType: photo.type
+      };
     }
     await products.save();
     res.status(201).send({
@@ -56,7 +70,7 @@ export const createProductController = async (req, res) => {
     res.status(500).send({
       success: false,
       error,
-      message: "Error in crearing product",
+      message: "Error in creating product",
     });
   }
 };

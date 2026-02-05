@@ -83,9 +83,9 @@ describe("User Model Unit Tests", () => {
   });
 
   // Test 8: Phone field should have trim enabled
-  it("should have trim enabled on phone field", () => {
+  it("should not have trim on phone field (Number type)", () => {
     const schema = userModel.schema.obj;
-    expect(schema.phone.trim).toBe(true);
+    expect(schema.phone.trim).toBeUndefined();
   });
 
   // Test 9: Address field should have trim enabled
@@ -118,7 +118,7 @@ describe("User Model Unit Tests", () => {
     expect(schema.name.type).toBe(String);
     expect(schema.email.type).toBe(String);
     expect(schema.password.type).toBe(String);
-    expect(schema.phone.type).toBe(String);
+    expect(schema.phone.type).toBe(Number);
     expect(schema.address.type).toBe(String);
     expect(schema.answer.type).toBe(String);
     expect(schema.role.type).toBe(Number);
@@ -298,17 +298,18 @@ describe("User Model Unit Tests", () => {
   });
 
   // Test 26: Phone should be trimmed
-  it("should trim whitespace from phone", () => {
+  it("should accept number for phone field", () => {
     const user = new userModel({
       name: "Test User",
       email: "test@test.com",
       password: "password123",
-      phone: "  1234567890  ",
+      phone: 1234567890,
       address: "123 Street",
       answer: "answer",
     });
 
-    expect(user.phone).toBe("1234567890");
+    expect(user.phone).toBe(1234567890);
+    expect(typeof user.phone).toBe("number");
   });
 
   // Test 27: Address should be trimmed
@@ -407,18 +408,18 @@ describe("User Model Unit Tests", () => {
   });
 
   // Test 34: Should cast number to string for phone field
-  it("should cast number to string for phone field", () => {
+  it("should cast string to number for phone field", () => {
     const user = new userModel({
       name: "Test User",
       email: "test@test.com",
       password: "password123",
-      phone: 1234567890,
+      phone: "1234567890",
       address: "123 Street",
       answer: "answer",
     });
 
-    expect(user.phone).toBe("1234567890");
-    expect(typeof user.phone).toBe("string");
+    expect(user.phone).toBe(1234567890);
+    expect(typeof user.phone).toBe("number");
   });
 
   // Test 35: Should cast number to string for address field

@@ -1,0 +1,464 @@
+import { jest } from "@jest/globals";
+import productModel from "../models/productModel.js";
+import fs from "fs";
+import slugify from "slugify";
+
+// Mock dependencies before importing controller
+jest.mock("../models/productModel.js");
+jest.mock("fs");
+jest.mock("slugify");
+jest.mock("braintree", () => ({
+  BraintreeGateway: jest.fn().mockImplementation(() => ({})),
+  Environment: {
+    Sandbox: "sandbox",
+  },
+}));
+
+// Import controller after mocks are set up
+import { createProductController } from "./productController.js";
+
+describe("createProductController", () => {
+  // AI generated unit tests using Github Copilot (Claude Sonnet 4.5) Agent Mode for the following:
+  // Test Coverage 1: All possible error messages are given correctly for missing fields
+  // Test Coverage 2: Empty req.files does not cause error (graceful handling)
+  // Test Coverage 3: Extra fields cannot be added to product (security validation)
+  // Test Coverage 4: Photo size validation (> 1MB rejection)
+  // Test Coverage 5: Successful product creation with and without photo
+  // Test Coverage 6: Photo assignment bug fix verification (lines 57-60)
+
+  // Prompt: do unit test for the method createProductController notable test all possible error 
+  // messages is given correctly, multiple errors can be handled as well, empty req.files does not 
+  // cause error, extra fields cannot be added, additionally check line 56-59, I think it cause an 
+  // error cause products.photo is not defined yet so make sure to have test case for it and fix 
+  // code if necessary
+
+  // Bug fixes in productController.js by Github Copilot (Claude Sonnet 4.5) Agent Mode:
+  // Fixed 1: Changed photo assignment from products.photo.data/contentType to products.photo = {...}
+  //          to avoid "Cannot set property of undefined" error
+  // Fixed 2: Removed spread operator ...req.fields for security (prevents field injection)
+  // Fixed 3: Use only explicitly validated fields (name, description, price, category, quantity, shipping)
+
+  let req, res, mockProduct, mockSave;
+
+  beforeEach(() => {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+
+    // Mock request object
+    req = {
+      fields: {
+        name: "Test Product",
+        description: "Test Description",
+        price: "100",
+        category: "category123",
+        quantity: "10",
+        shipping: "true",
+      },
+      files: {},
+    };
+
+    // Mock response object
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+    };
+
+    // Mock product instance
+    mockSave = jest.fn().mockResolvedValue();
+    mockProduct = {
+      save: mockSave,
+      name: "Test Product",
+      description: "Test Description",
+      price: 100,
+      category: "category123",
+      quantity: 10,
+      shipping: true,
+      slug: "test-product",
+    };
+
+    productModel.mockImplementation(() => mockProduct);
+    slugify.mockReturnValue("test-product");
+  });
+
+  // Test 1: Should return error when req.fields is missing
+  it("should return 400 error when req.fields is missing", async () => {
+    req.fields = undefined;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      message: "Please provide all fields",
+    });
+  });
+
+  // Test 2: Should return error when name is missing
+  it("should return error when name is missing", async () => {
+    delete req.fields.name;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
+  });
+
+  // Test 3: Should return error when description is missing
+  it("should return error when description is missing", async () => {
+    delete req.fields.description;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      error: "Description is Required",
+    });
+  });
+
+  // Test 4: Should return error when price is missing
+  it("should return error when price is missing", async () => {
+    delete req.fields.price;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Price is Required" });
+  });
+
+  // Test 5: Should return error when category is missing
+  it("should return error when category is missing", async () => {
+    delete req.fields.category;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Category is Required" });
+  });
+
+  // Test 6: Should return error when quantity is missing
+  it("should return error when quantity is missing", async () => {
+    delete req.fields.quantity;
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Quantity is Required" });
+  });
+
+  // Test 7: Should return error when photo size exceeds 1MB
+  it("should return error when photo size exceeds 1MB", async () => {
+    req.files = {
+      photo: {
+        size: 1500000, // 1.5MB
+        path: "/fake/path",
+        type: "image/jpeg",
+      },
+    };
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      error: "Photo should be less than 1mb",
+    });
+  });
+
+  // Test 8: Should handle first error when multiple fields are missing
+  it("should return first error when multiple fields are missing", async () => {
+    delete req.fields.name;
+    delete req.fields.description;
+    delete req.fields.price;
+
+    await createProductController(req, res);
+
+    // Switch statement catches first error (name)
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
+  });
+
+  // Test 9: Should create product successfully without photo
+  it("should create product successfully without photo", async () => {
+    req.files = {};
+
+    await createProductController(req, res);
+
+    expect(productModel).toHaveBeenCalledWith({
+      name: "Test Product",
+      description: "Test Description",
+      price: "100",
+      category: "category123",
+      quantity: "10",
+      shipping: "true",
+      slug: "test-product",
+    });
+    expect(slugify).toHaveBeenCalledWith("Test Product");
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Created Successfully",
+      products: mockProduct,
+    });
+  });
+
+  // Test 10: Should create product successfully with photo
+  it("should create product successfully with photo", async () => {
+    const mockPhotoBuffer = Buffer.from("fake image data");
+    req.files = {
+      photo: {
+        size: 500000, // 0.5MB
+        path: "/fake/path/photo.jpg",
+        type: "image/jpeg",
+      },
+    };
+    fs.readFileSync.mockReturnValue(mockPhotoBuffer);
+
+    await createProductController(req, res);
+
+    expect(productModel).toHaveBeenCalledWith({
+      name: "Test Product",
+      description: "Test Description",
+      price: "100",
+      category: "category123",
+      quantity: "10",
+      shipping: "true",
+      slug: "test-product",
+    });
+    expect(fs.readFileSync).toHaveBeenCalledWith("/fake/path/photo.jpg");
+    expect(mockProduct.photo).toEqual({
+      data: mockPhotoBuffer,
+      contentType: "image/jpeg",
+    });
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Created Successfully",
+      products: mockProduct,
+    });
+  });
+
+  // Test 11: Should not include extra fields from req.fields
+  it("should not include extra fields from req.fields", async () => {
+    req.fields.extraField = "malicious data";
+    req.fields.adminRole = "true";
+
+    await createProductController(req, res);
+
+    // Verify only expected fields are passed to productModel
+    const modelCall = productModel.mock.calls[0][0];
+    expect(modelCall).not.toHaveProperty("extraField");
+    expect(modelCall).not.toHaveProperty("adminRole");
+    expect(Object.keys(modelCall)).toEqual([
+      "name",
+      "description",
+      "price",
+      "category",
+      "quantity",
+      "shipping",
+      "slug",
+    ]);
+  });
+
+  // Test 12: Should handle empty req.files gracefully
+  it("should handle empty req.files without error", async () => {
+    req.files = {};
+
+    await createProductController(req, res);
+
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Created Successfully",
+      products: mockProduct,
+    });
+  });
+
+  // Test 13: Should handle undefined req.files gracefully
+  it("should handle undefined req.files without error", async () => {
+    req.files = undefined;
+
+    await createProductController(req, res);
+
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 14: Should handle missing req.files.photo gracefully
+  it("should handle missing req.files.photo without error", async () => {
+    req.files = { otherFile: {} };
+
+    await createProductController(req, res);
+
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 15: Should handle database save error
+  it("should return 500 error when database save fails", async () => {
+    const dbError = new Error("Database connection failed");
+    mockSave.mockRejectedValue(dbError);
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      error: dbError,
+      message: "Error in creating product",
+    });
+  });
+
+  // Test 16: Should handle file read error
+  it("should return 500 error when photo file read fails", async () => {
+    req.files = {
+      photo: {
+        size: 500000,
+        path: "/invalid/path/photo.jpg",
+        type: "image/jpeg",
+      },
+    };
+    const fileError = new Error("File not found");
+    fs.readFileSync.mockImplementation(() => {
+      throw fileError;
+    });
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      error: fileError,
+      message: "Error in creating product",
+    });
+  });
+
+  // Test 17: Should generate slug from product name
+  it("should generate slug from product name using slugify", async () => {
+    slugify.mockReturnValue("custom-slug");
+    req.fields.name = "Custom Product Name";
+
+    await createProductController(req, res);
+
+    expect(slugify).toHaveBeenCalledWith("Custom Product Name");
+    expect(productModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: "custom-slug",
+      })
+    );
+  });
+
+  // Test 18: Photo assignment bug fix verification
+  it("should assign photo as object without causing undefined error", async () => {
+    const mockPhotoBuffer = Buffer.from("test data");
+    req.files = {
+      photo: {
+        size: 100000,
+        path: "/test/path.jpg",
+        type: "image/png",
+      },
+    };
+    fs.readFileSync.mockReturnValue(mockPhotoBuffer);
+
+    await createProductController(req, res);
+
+    // Verify photo is assigned as complete object (bug fix)
+    expect(mockProduct.photo).toBeDefined();
+    expect(mockProduct.photo).toEqual({
+      data: mockPhotoBuffer,
+      contentType: "image/png",
+    });
+    // Should not throw "Cannot set property 'data' of undefined" error
+    expect(mockSave).toHaveBeenCalled();
+  });
+
+  // Test 19: Should handle name with empty string
+  it("should return error when name is empty string", async () => {
+    req.fields.name = "";
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
+  });
+
+  // Test 20: Should handle price as string (valid input from form)
+  it("should accept price as string from form input", async () => {
+    req.fields.price = "99.99";
+
+    await createProductController(req, res);
+
+    expect(productModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        price: "99.99",
+      })
+    );
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 21: Should handle quantity as string (valid input from form)
+  it("should accept quantity as string from form input", async () => {
+    req.fields.quantity = "50";
+
+    await createProductController(req, res);
+
+    expect(productModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        quantity: "50",
+      })
+    );
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 22: Should handle shipping field when not provided
+  it("should handle missing shipping field gracefully", async () => {
+    delete req.fields.shipping;
+
+    await createProductController(req, res);
+
+    expect(productModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shipping: undefined,
+      })
+    );
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 23: Should validate photo at exactly 1MB boundary
+  it("should accept photo at exactly 1MB size", async () => {
+    req.files = {
+      photo: {
+        size: 1000000, // exactly 1MB
+        path: "/fake/path",
+        type: "image/jpeg",
+      },
+    };
+    fs.readFileSync.mockReturnValue(Buffer.from("data"));
+
+    await createProductController(req, res);
+
+    expect(mockSave).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // Test 24: Should reject photo at 1MB + 1 byte
+  it("should reject photo at 1MB + 1 byte", async () => {
+    req.files = {
+      photo: {
+        size: 1000001, // 1MB + 1 byte
+        path: "/fake/path",
+        type: "image/jpeg",
+      },
+    };
+
+    await createProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      error: "Photo should be less than 1mb",
+    });
+  });
+});
