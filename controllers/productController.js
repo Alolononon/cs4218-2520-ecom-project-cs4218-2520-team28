@@ -142,7 +142,23 @@ export const productPhotoController = async (req, res) => {
 //delete controller
 export const deleteProductController = async (req, res) => {
   try {
-    await productModel.findByIdAndDelete(req.params.pid).select("-photo");
+    const { pid } = req.params;
+    
+    // Validate product ID is provided
+    if (!pid) {
+      return res.status(400).send({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+    
+    const product = await productModel.findByIdAndDelete(pid).select("-photo");
+    if (!product) {
+      return res.status(404).send({
+        success: false,
+        message: "Product not found",
+      });
+    }
     res.status(200).send({
       success: true,
       message: "Product Deleted successfully",

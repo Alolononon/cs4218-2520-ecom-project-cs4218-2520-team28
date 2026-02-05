@@ -3,6 +3,11 @@ import productModel from "../models/productModel.js";
 import fs from "fs";
 import slugify from "slugify";
 
+// Mock environment variables before importing controller
+process.env.BRAINTREE_MERCHANT_ID = "test_merchant_id";
+process.env.BRAINTREE_PUBLIC_KEY = "test_public_key";
+process.env.BRAINTREE_PRIVATE_KEY = "test_private_key";
+
 // Mock dependencies before importing controller
 jest.mock("../models/productModel.js");
 jest.mock("fs");
@@ -15,7 +20,10 @@ jest.mock("braintree", () => ({
 }));
 
 // Import controller after mocks are set up
-import { createProductController } from "./productController.js";
+import {
+  createProductController,
+  deleteProductController,
+} from "./productController.js";
 
 describe("createProductController", () => {
   // AI generated unit tests using Github Copilot (Claude Sonnet 4.5) Agent Mode for the following:
@@ -459,6 +467,197 @@ describe("createProductController", () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
       error: "Photo should be less than 1mb",
+    });
+  });
+});
+
+describe("deleteProductController", () => {
+  // AI generated unit tests using Github Copilot (Claude Sonnet 4.5) Agent Mode for the following:
+  // Test Coverage 1: Successful product deletion by valid ID
+  // Test Coverage 2: 404 error when product not found
+  // Test Coverage 3: Error handling for invalid product ID format
+  // Test Coverage 4: Database error handling during deletion
+  // Test Coverage 5: Verification that correct product is deleted
+  // Test Coverage 6: 400 error when product ID is not provided
+
+  // Prompt 1: explain deleteController code
+  // Prompt 2: ok fix them and create unit test based on the corrected behaviour make sure to include AI usage
+  // Prompt 3: modify deleteProductController to check if pid is provided and update relevant test case 
+  //           before trying else give 400 error update AI usage for it as well
+
+  // Bug fixes in productController.js by Github Copilot (Claude Sonnet 4.5) Agent Mode:
+  // Fixed 1: Added validation to check if product exists before returning success
+  // Fixed 2: Return 404 error when product is not found instead of success message
+  // Fixed 3: Added validation to check if pid is provided before attempting deletion
+  // Fixed 4: Return 400 error when product ID is missing or empty
+
+  let req, res;
+
+  beforeEach(() => {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+
+    // Mock request object
+    req = {
+      params: {
+        pid: "validProductId123",
+      },
+    };
+
+    // Mock response object
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+    };
+  });
+
+  // Test 1: Should successfully delete product with valid ID
+  it("should delete product successfully with valid ID", async () => {
+    const mockDeletedProduct = {
+      _id: "validProductId123",
+      name: "Test Product",
+      price: 100,
+    };
+    const mockSelect = jest.fn().mockResolvedValue(mockDeletedProduct);
+    productModel.findByIdAndDelete = jest
+      .fn()
+      .mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+      "validProductId123"
+    );
+    expect(mockSelect).toHaveBeenCalledWith("-photo");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Deleted successfully",
+    });
+  });
+
+  // Test 2: Should return 404 when product not found
+  it("should return 404 error when product not found", async () => {
+    const mockSelect = jest.fn().mockResolvedValue(null);
+    productModel.findByIdAndDelete = jest.fn().mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+      "validProductId123"
+    );
+    expect(mockSelect).toHaveBeenCalledWith("-photo");
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Product not found",
+    });
+  });
+
+  // Test 3: Should handle invalid product ID format
+  it("should handle invalid product ID format", async () => {
+    req.params.pid = "invalidIdFormat";
+    const dbError = new Error("Cast to ObjectId failed");
+    const mockSelect = jest.fn().mockRejectedValue(dbError);
+    productModel.findByIdAndDelete = jest.fn().mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+      "invalidIdFormat"
+    );
+    expect(mockSelect).toHaveBeenCalledWith("-photo");
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while deleting product",
+      error: dbError,
+    });
+  });
+
+  // Test 4: Should handle database connection error
+  it("should handle database connection error", async () => {
+    const dbError = new Error("Database connection failed");
+    const mockSelect = jest.fn().mockRejectedValue(dbError);
+    productModel.findByIdAndDelete = jest.fn().mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while deleting product",
+      error: dbError,
+    });
+  });
+
+  // Test 5: Should verify correct product ID is used
+  it("should call findByIdAndDelete with correct product ID", async () => {
+    req.params.pid = "specificProductId456";
+    const mockSelect = jest.fn().mockResolvedValue({
+      _id: "specificProductId456",
+      name: "Specific Product",
+    });
+    productModel.findByIdAndDelete = jest.fn().mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+      "specificProductId456"
+    );
+    expect(mockSelect).toHaveBeenCalledWith("-photo");
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledTimes(1);
+  });
+
+  // Test 6: Should not return photo data in response
+  it("should successfully delete product without returning photo data", async () => {
+    const mockDeletedProduct = {
+      _id: "validProductId123",
+      name: "Test Product",
+      price: 100,
+      photo: {
+        data: Buffer.from("large binary data"),
+        contentType: "image/jpeg",
+      },
+    };
+    const mockSelect = jest.fn().mockResolvedValue(mockDeletedProduct);
+    productModel.findByIdAndDelete = jest
+      .fn()
+      .mockReturnValue({ select: mockSelect });
+
+    await deleteProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    // Response should not include the deleted product data (especially photo)
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Deleted successfully",
+    });
+  });
+
+  // Test 7: Should handle missing params.pid
+  it("should return 400 error when product ID is missing", async () => {
+    req.params.pid = undefined;
+
+    await deleteProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Product ID is required",
+    });
+  });
+
+  // Test 8: Should handle empty string product ID
+  it("should return 400 error when product ID is empty string", async () => {
+    req.params.pid = "";
+
+    await deleteProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Product ID is required",
     });
   });
 });
