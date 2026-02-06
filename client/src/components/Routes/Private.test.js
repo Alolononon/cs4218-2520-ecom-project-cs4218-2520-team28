@@ -144,6 +144,7 @@ describe("Private Route Test", () => {
   });
 
   test("true -> false: Outlet then Spinner when token changes and API returns ok=false", async () => {
+    // Arrange setup of initial state
     // First render: ok=true
     mockAuthValue = [{ token: "t1" }, jest.fn()];
     axios.get.mockResolvedValueOnce({ data: { ok: true } });
@@ -151,13 +152,15 @@ describe("Private Route Test", () => {
     const { rerender } = render(<PrivateRoute />);
     await waitFor(() => {
       expect(screen.getByTestId("outlet")).toBeInTheDocument();
-    });
+    }); // ensures intial state is ready
 
+    // Act
     // Second render: change token and ok=false
     mockAuthValue = [{ token: "t2" }, jest.fn()];
     axios.get.mockResolvedValueOnce({ data: { ok: false } });
     rerender(<PrivateRoute />);
 
+    // Assert
     // useEffect runs again due to token change
     await waitFor(() => {
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
@@ -167,6 +170,7 @@ describe("Private Route Test", () => {
   });
 
   test("false -> true: Spinner then Outlet when token changes and API returns ok=true", async () => {
+    // Arrange setup of initial state
     // First render: ok=false
     mockAuthValue = [{ token: "t1" }, jest.fn()];
     axios.get.mockResolvedValueOnce({ data: { ok: false } });
@@ -180,11 +184,13 @@ describe("Private Route Test", () => {
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
     expect(screen.queryByTestId("outlet")).not.toBeInTheDocument();
 
+    // Act
     // Second render: change token and ok=true
     mockAuthValue = [{ token: "t2" }, jest.fn()];
     axios.get.mockResolvedValueOnce({ data: { ok: true } });
     rerender(<PrivateRoute />);
 
+    // Assert
     // Now wait for the outlet to appear (this also ensures API was called)
     await waitFor(() => {
       expect(screen.getByTestId("outlet")).toBeInTheDocument();

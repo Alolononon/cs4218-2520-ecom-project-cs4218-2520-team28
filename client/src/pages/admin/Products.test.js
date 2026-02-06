@@ -6,7 +6,7 @@
 // Notably mock other things that is not the unit we are testing
 // Minimally do test the following
 // 1) Layout and Admin Menu rendered
-// 2) when data.products is empty array does not crash
+// 2) when data.products is empty array does not crashHandle
 // 3) when data.products is one single item -> ensure all components rendered 
 //    -> 1 test for each component of the product so we can identify error more easily
 //    -> Link, img, name, description
@@ -671,6 +671,13 @@ describe("Products Page", () => {
 
   // Test 9.6: Missing _id field (no key)
   it("handles missing _id field - potential React warning", async () => {
+    // Suppress React key warning for this test
+    const originalError = console.error;
+    console.error = jest.fn((message) => {
+      if (message.includes('unique "key" prop')) return;
+      originalError(message);
+    });
+
     // Arrange
     const mockProduct = {
       // _id is missing
@@ -689,6 +696,9 @@ describe("Products Page", () => {
     await waitFor(() => {
       expect(screen.getByText("Test Product")).toBeInTheDocument();
     });
+
+    // Restore console.error
+    console.error = originalError;
   });
 
   // Test 9.7: Layout structure verification
