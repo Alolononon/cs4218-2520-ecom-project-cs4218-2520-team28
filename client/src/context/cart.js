@@ -3,6 +3,8 @@
 // for each user in localStorage using key "cart:userId", and "cart:guest" for non-logged in users. 
 // This ensures that each user's cart is preserved when they log out and another user logs in,
 // preventing data loss and improving user experience.
+// Exception is when user who logged in has no saved cart, then we transfer the guest cart to user cart 
+// so that items added before login are preserved, ensuring a seamless shopping experience.
 
 // AI assistance: ChatGPT 5.2 Thinking, modified by Github Copilot (Grok Code Fast 1) Agent Mode and Claude Opus 4.6 Agent Mode
 // Link to ChatGPT Prompt: https://chatgpt.com/share/69918c47-e8ec-8005-bb63-f37d41e0696d
@@ -15,6 +17,8 @@
 // Github Copilot Prompt(Claude):
 // Modify the cart logic such that if log in from guest to user and user has no data set the guest data to user data. 
 // This is because when user shop and then want to make acc to checkout they should keep their cart
+// Github Copilot Prompt(Claude):
+// after transfer guest cart persist and won't be affected if user add more item after
 
 import React, { useState, useContext, createContext, useEffect, useMemo } from "react";
 import { useAuth } from "./auth";
@@ -44,7 +48,6 @@ const CartProvider = ({ children }) => {
             const guestParsed = JSON.parse(guestSaved);
             if (Array.isArray(guestParsed) && guestParsed.length > 0) {
               cartData = guestParsed;
-              localStorage.removeItem("cart:guest");
             }
           }
         } catch {

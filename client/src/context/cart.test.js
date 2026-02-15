@@ -479,8 +479,8 @@ describe("CartProvider", () => {
       expect(screen.getByTestId("cart-data").textContent).toBe(
         JSON.stringify([item1])
       );
-      // Guest cart should be cleared after transfer
-      expect(localStorage.getItem("cart:guest")).toBeNull();
+      // Guest cart should still be present in localStorage
+      expect(localStorage.getItem("cart:guest")).toBe(JSON.stringify([item1]));
     });
 
     it("GN -> U1N: login from non-empty guest cart, user 1 has saved cart", () => {
