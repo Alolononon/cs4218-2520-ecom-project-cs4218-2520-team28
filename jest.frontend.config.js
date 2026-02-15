@@ -29,7 +29,7 @@ export default {
     "<rootDir>/client/src/pages/admin/AdminOrders.test.js",
     "<rootDir>/client/src/pages/user/Orders.test.js",
     "<rootDir>/client/src/pages/Contact.test.js",
-    
+    "<rootDir>/client/src/pages/Policy.test.js",
   ],
 
   // jest code coverage
@@ -43,6 +43,7 @@ export default {
     "client/src/pages/admin/AdminOrders.js",
     "client/src/pages/user/Orders.js",
     "client/src/pages/Contact.js",
+    "client/src/pages/Policy.js",
   ],
   coverageThreshold: {
     global: {
