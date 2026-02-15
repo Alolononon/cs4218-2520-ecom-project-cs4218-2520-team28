@@ -1,7 +1,7 @@
 // Foo Chao, A0272024R
 
 // AI usage:
-// Prompt 1 (Github Copilot Claude Sonnet 4.6): Following the instructions on line 7 to 45, generate unit tests for CartPage.js. 
+// Prompt 1 (Github Copilot Claude Opus 4.6): Following the instructions on line 7 to 45, generate unit tests for cart.js. 
 // Make sure to look at and follow the styling and structure of the tests as stated in instructions there.
 // Summarise the test case added below line 45
 // Instructions for AI:

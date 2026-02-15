@@ -40,8 +40,9 @@ const CartPage = () => {
     try {
       let total = 0;
       // eslint-disable-next-line
-      cart?.map((item) => {
-        total = total + (item?.price?? 0);
+      cart?.forEach((item) => {
+        const price = Number(item?.price) || 0;
+        total = total + price;
       });
       return total.toLocaleString("en-US", {
         style: "currency",
@@ -49,6 +50,7 @@ const CartPage = () => {
       });
     } catch (error) {
       console.log(error);
+      return "Error calculating total"; // Admit error instead of hiding it
     }
   };
 
