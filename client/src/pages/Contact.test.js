@@ -42,27 +42,52 @@ describe("Contact Page", () => {
   // ── Rendering tests (each component renders) ──
 
   it("renders the Layout component", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     expect(screen.getByTestId("layout")).toBeInTheDocument();
   });
 
   it("renders the BiMailSend icon", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     expect(screen.getByTestId("bi-mail-send")).toBeInTheDocument();
   });
 
   it("renders the BiPhoneCall icon", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     expect(screen.getByTestId("bi-phone-call")).toBeInTheDocument();
   });
 
   it("renders the BiSupport icon", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     expect(screen.getByTestId("bi-support")).toBeInTheDocument();
   });
 
   it("renders the contact us image", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const img = screen.getByAltText("Contact us illustration");
     expect(img).toBeInTheDocument();
   });
@@ -70,26 +95,46 @@ describe("Contact Page", () => {
   // ── Child-of-Layout tests ──
 
   it("img is a child of Layout", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     const img = screen.getByAltText("Contact us illustration");
     expect(layout).toContainElement(img);
   });
 
   it("BiMailSend is a child of Layout", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     expect(layout).toContainElement(screen.getByTestId("bi-mail-send"));
   });
 
   it("BiPhoneCall is a child of Layout", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     expect(layout).toContainElement(screen.getByTestId("bi-phone-call"));
   });
 
   it("BiSupport is a child of Layout", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     expect(layout).toContainElement(screen.getByTestId("bi-support"));
   });
@@ -97,18 +142,33 @@ describe("Contact Page", () => {
   // ── Props and attributes tests ──
 
   it("Layout has correct title prop", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     expect(screen.getByTestId("layout")).toHaveTextContent("Layout Title: Contact us");
   });
 
   it("image has correct src attribute", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const img = screen.getByAltText("Contact us illustration");
     expect(img).toHaveAttribute("src", "/images/contactus.jpeg");
   });
 
   it("image has correct alt attribute", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+    
+    // Assert
     const img = screen.getByRole("img");
     expect(img).toHaveAttribute("alt", "Contact us illustration");
   });
@@ -116,13 +176,23 @@ describe("Contact Page", () => {
   // ── Heading tests ──
 
   it("renders a heading element", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+        
+    // Assert
     const heading = screen.getByRole("heading");
     expect(heading).toBeInTheDocument();
   });
 
   it("heading is a child of Layout", () => {
+    // Arrange
+    
+    // Act
     render(<Contact />);
+
+    // Assert
     const layout = screen.getByTestId("layout");
     const heading = screen.getByRole("heading");
     expect(layout).toContainElement(heading);

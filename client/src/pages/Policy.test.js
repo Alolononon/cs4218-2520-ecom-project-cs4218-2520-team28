@@ -36,12 +36,18 @@ describe("Policy Page", () => {
   // ── Rendering tests ──
 
   it("renders the Layout component", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     expect(screen.getByTestId("layout")).toBeInTheDocument();
   });
 
   it("renders the privacy policy image", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const img = screen.getByAltText("Contact us illustration");
     expect(img).toBeInTheDocument();
   });
@@ -49,18 +55,27 @@ describe("Policy Page", () => {
   // ── Props and attributes tests ──
 
   it("Layout has correct title prop", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     expect(screen.getByTestId("layout")).toHaveTextContent("Layout Title: Privacy Policy");
   });
 
   it("image has correct src attribute", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const img = screen.getByAltText("Contact us illustration");
     expect(img).toHaveAttribute("src", "/images/contactus.jpeg");
   });
 
   it("image has correct alt attribute", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const img = screen.getByRole("img");
     expect(img).toHaveAttribute("alt", "Contact us illustration");
   });
@@ -68,13 +83,19 @@ describe("Policy Page", () => {
   // ── Heading tests ──
 
   it("renders a heading element", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const heading = screen.getByRole("heading");
     expect(heading).toBeInTheDocument();
   });
 
   it("heading is a child of Layout", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     const heading = screen.getByRole("heading");
     expect(layout).toContainElement(heading);
@@ -83,7 +104,10 @@ describe("Policy Page", () => {
   // ── Child-of-Layout tests ──
 
   it("image is a child of Layout", () => {
+    // Arrange & Act
     render(<Policy />);
+    
+    // Assert
     const layout = screen.getByTestId("layout");
     const img = screen.getByAltText("Contact us illustration");
     expect(layout).toContainElement(img);
