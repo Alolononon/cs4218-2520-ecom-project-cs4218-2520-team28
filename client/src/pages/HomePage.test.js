@@ -70,9 +70,9 @@
 //   1d) Load more button: shown when more products, hidden when all loaded (2 tests)
 //   1e) Loading message: shown while fetching, "No products found" hidden while loading (2 tests)
 //
-// Category 2: Product Rendering (14 tests)
+// Category 2: Product Rendering (16 tests)
 //   2a) Initial API calls: get-category, product-count, product-list (3 tests)
-//   2b) API error handling: toast for each failing API (3 tests)
+//   2b) API error handling: toast for each failing API, undefined data handling (5 tests)
 //   2c) Product details: names, truncated descriptions, formatted prices, images (4 tests)
 //   2d) More Details button: renders and navigates (2 tests)
 //   2e) ADD TO CART button: renders and updates cart with toast (2 tests)
@@ -617,6 +617,54 @@ describe("HomePage", () => {
             "Failed to load products"
           )
         );
+      });
+
+      it("does not set categories when get-category returns undefined data", async () => {
+        // Arrange
+        axios.get.mockImplementation((url) => {
+          if (url === "/api/v1/category/get-category")
+            return Promise.resolve({ data: undefined });
+          if (url === "/api/v1/product/product-count")
+            return Promise.resolve({ data: { total: 6 } });
+          if (url.startsWith("/api/v1/product/product-list/"))
+            return Promise.resolve({ data: { products: mockProducts } });
+          return Promise.reject(new Error("Unhandled"));
+        });
+
+        // Act
+        renderHomePage();
+
+        // Assert - categories not rendered
+        await waitFor(() =>
+          expect(screen.getByText("Laptop")).toBeInTheDocument()
+        );
+        expect(screen.queryByText("Electronics")).not.toBeInTheDocument();
+        expect(screen.queryByText("Clothing")).not.toBeInTheDocument();
+      });
+
+      it("does not set categories when get-category returns data without success", async () => {
+        // Arrange
+        axios.get.mockImplementation((url) => {
+          if (url === "/api/v1/category/get-category")
+            return Promise.resolve({
+              data: { success: false, category: mockCategories },
+            });
+          if (url === "/api/v1/product/product-count")
+            return Promise.resolve({ data: { total: 6 } });
+          if (url.startsWith("/api/v1/product/product-list/"))
+            return Promise.resolve({ data: { products: mockProducts } });
+          return Promise.reject(new Error("Unhandled"));
+        });
+
+        // Act
+        renderHomePage();
+
+        // Assert - categories not rendered
+        await waitFor(() =>
+          expect(screen.getByText("Laptop")).toBeInTheDocument()
+        );
+        expect(screen.queryByText("Electronics")).not.toBeInTheDocument();
+        expect(screen.queryByText("Clothing")).not.toBeInTheDocument();
       });
     });
     //#endregion
